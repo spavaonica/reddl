@@ -1,0 +1,130 @@
+#!/bin/sh
+
+# Check if necessary programs are installed
+for prog in dmenu sxiv jq; do
+		[ ! "$(which "$prog")" ] && echo "Please install $prog!" && exit 1
+	done
+	# If notify-send is not installed, use echo as notifier
+	[ ! "$(which notify-send)" ] && notifier="echo" || notifier="notify-send"
+
+	# Default config directory
+	configdir="${XDG_CONFIG_HOME:-$HOME/.config}/reddl"
+
+	# Create .config/reddl if it does not exist to prevent
+	# the program from not functioning properly
+	[ ! -d "$configdir" ] && echo "Directory $configdir does not exist, creating..." && mkdir -p "$configdir"
+
+	# Default subreddits that will be inserted in "subs"
+	# if it does not exist
+	defaultsubs="wallpaper     | Some good desktop wallpapers.
+dankmemes     | Some DANK memes I guess.
+eyebleach     | SFW photos of cats and doggies."
+
+	# Default users that will be inserted in "users"
+	# if it does not exist
+	defaultusers="govschwarzenegger | Biggest chad on reddit.
+spez              | Wannabe chad on reddit."
+
+	# If subs does not exist, create it to prevent
+	# the program from not functioning properly
+	[ ! -f "$configdir/subs" ] && echo "$defaultsubs" >> "$configdir/subs"
+
+	# If users does not exist, create it to prevent
+	# the program from not functioning properly
+	[ ! -f "$configdir/users" ] && echo "$defaultusers" >> "$configdir/users"
+
+	# Set the default variables for options:
+	fullscreen="true"	# Opens in fullscreen without the -f option
+	sterm="r"		# Defaults to searching for subreddits without the -u option
+	sorting="hot"		# Sorts by hot if not specified otherwise
+	time="day"		# Sets the period when sorting by top. Does nothing when not sorting by top.
+
+	# Get the options for reddl:
+	while getopts ":n:s:t:fuh" OPTION; do
+		case $OPTION in
+
+			n)
+				limit=$OPTARG
+				;;
+
+			s)
+				sorting=$OPTARG
+				;;
+
+			t)
+				time=$OPTARG
+				;;
+
+			f)
+				fullscreen="false"
+				;;
+
+			u)
+				sterm="user"
+				;;
+
+			h)
+				echo "Usage: reddl [OPTION...]"
+				echo ""
+				echo " -n          Set the number of requests. Defaults to 100."
+				echo " -s          Sort by either 'hot', 'new', 'top', or 'rising'. Defaults to 'hot'."
+				echo " -t          Set the time period for sorting by top, eg 'reddl -s top -t all'."
+				echo "             Does nothing if not sorting by top."
+				echo " -f          Disables opening sxiv in fullscreen mode."
+				echo " -u          Search for users instead of subreddits."
+				echo " -h          Show this help page."
+				exit 0
+				;;
+
+			:)
+				echo "Invalid option: $OPTARG requires an argument"
+				exit 0
+				;;
+		esac
+	done
+
+	if [ "$sterm" == "user" ]; then
+	subreddit=$(dmenu -p "Select User u/" -i -l 10 < "$configdir/users" | cut -d\| -f1 | awk '{$1=$1;print}')
+	else	
+	subreddit=$(dmenu -p "Select Subreddit r/" -i -l 10 < "$configdir/subs" | cut -d\| -f1 | awk '{$1=$1;print}')
+	fi
+
+	# Default directory used to store the feed file and fetched images
+	cachedir="/tmp/reddl"
+
+	# If cachedir does not exist, create it
+	if [ ! -d "$cachedir" ]; then
+			echo "$cachedir does not exist, creating..."
+				mkdir -p "$cachedir"
+	fi
+
+	# Send a notification
+	$notifier "Reddl" "📩 Downloading your 🖼️ Memes"
+
+	# Download the subreddit feed, containing only the
+	# first n entries (limit), and store it inside
+	# cachedir/tmp.json
+	# User agend is Google Chrome 92 on Windows 10
+	curl -H "User-agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4495.0 Safari/537.36'" "https://www.reddit.com/$sterm/$subreddit/$sorting.json?t=$time&limit=${limit:-100}" > "$cachedir/tmp.json"
+
+	# Create a list of images
+	imgs=$(jq '.' < "$cachedir/tmp.json" | grep url_overridden_by_dest | grep -Eo "http(s|)://.*(jpg|png|gif)\b" | sort -u)
+
+	# If there are no images, exit
+	[ -z "$imgs" ] && $notifier "Reddl" "sadly, there are no images for $sterm/$subreddit, please try again later!" && exit 1
+
+	# Download images to $cachedir
+	wget -P "$cachedir" $imgs
+
+	# Send a notification
+	$notifier  "Reddl" "👍 Download Finished, Enjoy! 😊"
+
+	# Display the images
+	if [ "$fullscreen" == "true" ]; then
+		sxiv -f -b -a "$cachedir"/*.png "$cachedir"/*.jpg "$cachedir"/*.gif
+	else
+		sxiv -b -a "$cachedir"/*.png "$cachedir"/*.jpg "$cachedir"/*.gif
+	fi
+
+	# Once finished, remove all of the cached images
+	rm "${cachedir:?}"/*
