@@ -83,7 +83,7 @@ spez              | Wannabe chad on reddit."
 		esac
 	done
 
-	if [ "$sterm" == "user" ]; then
+	if [ "$sterm" = "user" ]; then
 	subreddit=$(dmenu -p "Select User u/" -i -l 10 < "$configdir/users" | cut -d\| -f1 | awk '{$1=$1;print}')
 	else	
 	subreddit=$(dmenu -p "Select Subreddit r/" -i -l 10 < "$configdir/subs" | cut -d\| -f1 | awk '{$1=$1;print}')
@@ -120,7 +120,7 @@ spez              | Wannabe chad on reddit."
 	$notifier  "Reddl" "👍 Download Finished, Enjoy! 😊"
 
 	# Display the images
-	if [ "$fullscreen" == "true" ]; then
+	if [ "$fullscreen" = "true" ]; then
 		sxiv -f -b -a "$cachedir"/*.png "$cachedir"/*.jpg "$cachedir"/*.gif
 	else
 		sxiv -b -a "$cachedir"/*.png "$cachedir"/*.jpg "$cachedir"/*.gif
