@@ -1,7 +1,7 @@
 # reddl
 improved reddit CLI searcher
 
-reddl has been heavily inspired by [redyt by Bugswriter](https://github.com/Bugswriter/redyt) but offers a number of improvements, such as .gif support, automatic fullscreen, searching for users, support for sorting by different time periods, using a less suspicious user agent:w, etc.
+reddl has been heavily inspired by [redyt by Bugswriter](https://github.com/Bugswriter/redyt) but offers a number of improvements, such as .gif support, automatic fullscreen, searching for users, support for sorting by different time periods, using a less suspicious user agent, etc.
 
 ## Installation
 
@@ -13,11 +13,11 @@ To run reddl, you'll need sxiv as an image viewer, dmenu for user input, and jq 
 
 If you use reddl without an option, it will open up dmenu to ask you for a subreddit and download all pictures from the first 100 posts on the subreddit's hot page. Available options are:
 
-- \-n [requests] \ \ \ Set the number of requests. For exmample `reddl -n 10` only looks at the first 10 posts on that subreddit. Defaults to 100.
-- \-s [hot, new,...] \ \ \ Sort by either "hot", "new", "top", or "rising". Defaults to "hot".
-- \-t [day, week,...] \ \ \ Set the time period for sorting by top. For example `reddl -s top -t all` gives the top posts of all time on that subreddit. Does nothing if not sorting by top.
-- \-f \ \ \ Usually reddl opens the images in fullscreen. Use the -f option if you _don't_ want reddl to open in fullscreen and prefer a new window instead. You can always press the `F` key in sxiv to toggle between fullscreen and windowed mode.
-- \-u \ \ \ Search for users instead of subreddits. Has it's own file for default dmenu entries.
-- \-h \ \ \ Opens up a brief help page.
+- \-n [requests] &nbsp; &nbsp; Set the number of requests. For example `reddl -n 10` only looks at the first 10 posts on that subreddit. Defaults to 100.
+- \-s [hot, new,...] &nbsp; &nbsp; Sort by either "hot", "new", "top", or "rising". Defaults to "hot".
+- \-t [day, week,...] &nbsp; &nbsp; Set the time period for sorting by top. For example `reddl -s top -t all` gives the top posts of all time on that subreddit. Does nothing if not sorting by top.
+- \-f &nbsp; &nbsp; Usually reddl opens the images in fullscreen. Use the -f option if you _don't_ want reddl to open in fullscreen and prefer a new window instead. You can always press the `F` key in sxiv to toggle between fullscreen and windowed mode.
+- \-u &nbsp; &nbsp; Search for users instead of subreddits. Has it's own file for default dmenu entries.
+- \-h &nbsp; &nbsp; Opens up a brief help page.
 
 Images are deleted every time sxiv is closed. If you want to save an image to set it as a wallpaper for your desktop or to do unorthodox things with your waifu, you'd have to copy it from /tmp/reddl while sxiv is still running. There are other scripts that can copy images or set wallpapers straight from sxiv.
